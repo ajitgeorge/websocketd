@@ -44,19 +44,22 @@ func main() {
 		Config: config.Config,
 		Log:    log})
 
-	log.Info("server", "Starting WebSocket server : ws://%s%s", config.Addr, config.BasePath)
+	log.Info("server", "Starting WebSocket server             : ws://%s%s", config.Addr, config.BasePath)
 	if config.DevConsole {
-		log.Info("server", "Developer console enabled : http://%s/", config.Addr)
+		log.Info("server", "Developer console enabled             : http://%s/", config.Addr)
 	}
 	if config.UsingScriptDir {
-		log.Info("server", "Serving from directory    : %s", config.ScriptDir)
+		log.Info("server", "Serving scripts from directory        : %s", config.ScriptDir)
 	} else {
-		log.Info("server", "Serving using application : %s %s", config.CommandName, strings.Join(config.CommandArgs, " "))
+		log.Info("server", "Serving using application             : %s %s", config.CommandName, strings.Join(config.CommandArgs, " "))
+	}
+	if config.ServingStaticContent {
+		log.Info("server", "Serving static content from directory : %s", config.StaticDir)
 	}
 
 	err := http.ListenAndServe(config.Addr, nil)
 	if err != nil {
-		log.Fatal("server", "Could start server: %s", err)
+		log.Fatal("server", "Couldn't start server: %s", err)
 		os.Exit(3)
 	}
 }

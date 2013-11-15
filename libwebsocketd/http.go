@@ -8,6 +8,8 @@ package libwebsocketd
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -40,6 +42,9 @@ func (h HttpWsMuxHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// Dev console (if enabled)
 		content := strings.Replace(ConsoleContent, "{{license}}", License, -1)
 		http.ServeContent(w, req, ".html", h.Config.StartupTime, strings.NewReader(content))
+	} else if h.Config.ServingStaticContent {
+		// Static content if enabled
+		serveStatic(w, req, h.Config.StaticDir, h.Log)
 	} else {
 		// 404
 		http.NotFound(w, req)
@@ -129,4 +134,31 @@ func pipeEndpoints(process Endpoint, wsEndpoint *WebSocketEndpoint, log *LogScop
 			}
 		}
 	}
+}
+
+func serveStatic(w http.ResponseWriter, req *http.Request, staticRoot string, log *LogScope) {
+	// if file does not exist, 404
+	// if contents cannot be read, 403
+
+	path := filepath.Join(staticRoot, filepath.FromSlash(req.URL.Path))
+	_, filename := filepath.Split(path)
+
+	fileinfo, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		http.NotFound(w, req)
+		return
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		if os.IsPermission(err) {
+			http.Error(w, "permission denied", http.StatusForbidden)
+		} else {
+			log.Error("server", "opening %s: %s", path, err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		return
+	}
+
+	http.ServeContent(w, req, filename, fileinfo.ModTime(), file)
 }

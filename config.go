@@ -40,6 +40,7 @@ func parseCommandLine() Config {
 	basePathFlag := flag.String("basepath", "/", "Base URL path (e.g /)")
 	reverseLookupFlag := flag.Bool("reverselookup", true, "Perform reverse DNS lookups on remote clients")
 	scriptDirFlag := flag.String("dir", "", "Base directory for WebSocket scripts")
+	staticDirFlag := flag.String("httpdir", "", "Static content root directory")
 	devConsoleFlag := flag.Bool("devconsole", false, "Enable development console")
 
 	flag.Parse()
@@ -73,6 +74,7 @@ func parseCommandLine() Config {
 
 	config.ReverseLookup = *reverseLookupFlag
 	config.ScriptDir = *scriptDirFlag
+	config.StaticDir = *staticDirFlag
 	config.DevConsole = *devConsoleFlag
 	config.StartupTime = time.Now()
 
@@ -116,6 +118,12 @@ func parseCommandLine() Config {
 		}
 		config.ScriptDir = scriptDir
 		config.UsingScriptDir = true
+	}
+
+	config.ServingStaticContent = config.StaticDir != ""
+	if config.ServingStaticContent && config.DevConsole {
+		fmt.Fprintf(os.Stderr, "Ambiguous.  Provided --devconsole and  and --httpdir argument.  Please only specify just one.\n")
+		os.Exit(1)
 	}
 
 	mainConfig.Config = &config

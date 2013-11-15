@@ -45,10 +45,14 @@ Options:
   --reverselookup={true,false}   Perform DNS reverse lookups on remote clients.
                                  Default: true
 
-  --dir=DIR                      Allow all scripts in the local directory
-                                 to be accessed as WebSockets. If using this,
+  --dir=DIR or                   Allow all scripts in the local directory
+  --wsdir=DIR                    to be accessed as WebSockets. If using this,
                                  option, then the standard program and args
                                  options should not be specified.
+
+  --httpdir=DIR                  Serve DIR as static content over http://[host]/.  
+                                 Serving static content is incompatible with 
+                                 --devconsole.
 
   --help                         Print help and exit.
 
